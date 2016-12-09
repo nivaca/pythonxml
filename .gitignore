@@ -1,0 +1,10 @@
+.idea/*
+.idea.mac/*
+.idea.linux/*
+__pycache__/*
+venv/*
+venv.linux/*
+venv.mac/*
+bak/*
+
+.DS_Store
