@@ -6,11 +6,50 @@ from pprint import pprint
 
 
 xml_prefix = 'b1d3qun'
+data_path = 'data/'
+files = ['sorb', 'maz', 'vat', 'tara']
+extension = '.xml'
+
+
+class Witness:
+    """This is the class of witnesses."""
+    def __init__(self, name):
+        self.name = name
+        self.file_name =\
+            os.path.join(data_path, ''.join([self.name, extension]))
+        self.xml_list = []
+        self.xml_ids = []
+        self.paragraphs = []
+        self.len = 0
+        self.parse_me()
+
+    def parse_me(self):
+        """Parses the file to obtain XML data."""
+        self.xml_list = list(parse_file(self.file_name))
+        self.xml_ids = [id[0] for id in self.xml_list]
+        self.paragraphs = [id[1] for id in self.xml_list]
+        self.len = len(self.xml_ids)
+
+    def get_par_by_index(self, index):
+        """Returns the contents of a certain paragraph
+        depending on its numbered index (0-len)."""
+        return self.paragraphs[index]
+
+    def get_par_by_xmlid(self, xmlid):
+        """Returns the contents of a certain paragraph
+        depending on its xml:id."""
+        return self.paragraphs[self.xml_ids.index(xmlid)]
+
+    def __len__(self):
+        """Returns the number of paragraphs in the witness."""
+        return self.len
 
 
 def parse_file(file):
+    """Parses a given TEI-XML file.
+    Returns a list of couples, like so:
+    [('b1d3qun-cdtvet', 'Circa ...'), etc.]"""
     soup = BeautifulSoup(open(file), "lxml-xml")
-
     soup = meta_cleanup(soup)
 
     # Checks whether tag has 'xml:id'
@@ -35,38 +74,37 @@ def parse_file(file):
     # This gives us a list of all and only all @xml:ids containing "b1d3qun":
     xml_ids = [p["xml:id"] for p in parag_list]
 
-    # Returns a list of the parsed XML, like so:
-    # [('b1d3qun-cdtvet': 'Circa ...'), etc.]
-    # This is useful because it indexes each pair of xml:id and p-content,
-    # since the xml:ids are not sorted in themselves.
-    return [(xml_ids[i], pa_cont_list[i]) for i in range(len(pa_cont_list))]
+    # Returns a list of couples of the parsed XML, like so:
+    # [('b1d3qun-cdtvet', 'Circa ...'), etc.]
+    datalist = list(zip(xml_ids, pa_cont_list))
+    return datalist
 
 
 def main():
-    data_path = 'data/'
-    files = ['sorb', 'maz', 'vat', 'tara']
-    extension = '.xml'
 
-    # Creates a list of the files, like so:
-    # ['data/sorb.xml', etc.]
-    file_list = \
-        [os.path.join(data_path, ''.join([file, extension])) for file in files]
-
-    # Creates a list of the dictionaries, like so:
-    # [{'b1d3qun-cdtvet': 'Circa...'}, etc.]
-    # This is required to index each xml:id => p
-    # as the xml:ids are not sorted out.
-    dictionaries = [parse_file(file) for file in file_list]
+    # Creates a lists of Witness objects.
+    # E.g. wit[0] is a Witness object whose name is contained in file[0].
+    wit = [Witness(files[count]) for count in range(len(files))]
 
 
-    texta = dictionaries[0][1][1]
-    textb = dictionaries[1][1][1]
+    print(len(wit[0]))
 
-    print(texta, '\n', textb)
+    exit()
 
-    delta = simplediff.diff(texta, textb)
-    for d in delta:
-        print(d)
+    # Creates a list of all XML:IDs (using the first file only)
+    xml_ids = [p[0] for p in parse_file(file_list[0])]
+
+    print(dict0[xml_ids[0]])
+
+
+    # texta = dictionaries[0][1][1]
+    # textb = dictionaries[1][1][1]
+    #
+    # print(texta, '\n', textb)
+    #
+    # delta = simplediff.diff(texta, textb)
+    # for d in delta:
+    #     print(d)
 
 
 
