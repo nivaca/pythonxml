@@ -3,7 +3,8 @@ from bs4 import BeautifulSoup
 from xmlcleaners import meta_cleanup, clean_str
 import simplediff
 from pprint import pprint
-
+import pyprind
+import sys
 
 xml_prefix = 'b1d3qun'
 data_path = 'data/'
@@ -80,22 +81,29 @@ def parse_file(file):
     return datalist
 
 
+def compare_witnesses(fromwit, towit):
+    """Compares two witnesses."""
+    print('From:', fromwit.name)
+    print('To:', towit.name)
+
+
 def main():
+    file_num = len(files)
+    bar = pyprind.ProgBar(file_num, title='Parsing files...', stream=sys.stdout)
 
     # Creates a lists of Witness objects.
     # E.g. wit[0] is a Witness object whose name is contained in file[0].
-    wit = [Witness(files[count]) for count in range(len(files))]
+    # witness = [Witness(files[i]) for i in range(len(files))]
+    witness = []
+    for i in range(file_num):
+        witness.append(Witness(files[i]))
+        bar.update()
+
+    # Creates a global list of all XML:IDs (using the first file only)
+    xml_ids = witness[0].xml_ids
 
 
-    print(len(wit[0]))
-
-    exit()
-
-    # Creates a list of all XML:IDs (using the first file only)
-    xml_ids = [p[0] for p in parse_file(file_list[0])]
-
-    print(dict0[xml_ids[0]])
-
+    compare_witnesses(witness[0], witness[1])
 
     # texta = dictionaries[0][1][1]
     # textb = dictionaries[1][1][1]
