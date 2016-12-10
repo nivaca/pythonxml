@@ -29,8 +29,8 @@ def clean_str(thetext):
 #     return insoup
 
 
-# <unclear>xxx</unclear>  =>  ¿xxx¿
 def unclear_tag_cleanup(insoup):
+    """ <unclear>xxx</unclear>  =>  ¿xxx¿ """
     for match in insoup.find_all('unclear'):
         match.insert_before('¿')
         match.insert_after('¿')
@@ -38,8 +38,8 @@ def unclear_tag_cleanup(insoup):
     return insoup
 
 
-# <add>xxx</add>  =>  +xxx+
 def add_tag_cleanup(insoup):
+    """ <add>xxx</add>  =>  +xxx+ """
     for match in insoup.find_all('add'):
         match.insert_before('+')
         match.insert_after('+')
@@ -47,8 +47,8 @@ def add_tag_cleanup(insoup):
     return insoup
 
 
-# <del>xxx</del>  =>  _xxx_
 def del_tag_cleanup(insoup):
+    """ <del>xxx</del>  =>  _xxx_ """
     for match in insoup.find_all('del'):
         match.insert_before('_')
         match.insert_after('_')
@@ -56,16 +56,16 @@ def del_tag_cleanup(insoup):
     return insoup
 
 
-# <gap/>  =>  ¿…¿
 def gap_tag_cleanup(insoup):
+    """ <gap/>  =>  ¿…¿ """
     for match in insoup.find_all('gap'):
         match.insert_before('¿…¿')
         match.decompose()
     return insoup
 
 
-# Unwraps selected tags leaving their contents
 def simple_tag_cleanup(insoup):
+    """ Unwraps selected tags leaving their contents. """
     wrapped_tags = ['lb', 'cb', 'pb', 'title', 'name',
                     'g', 'c', 'corr', 'sic', 'ref', 'pc',
                     'hi', 'subst', 'seg', 'cit',
@@ -77,8 +77,8 @@ def simple_tag_cleanup(insoup):
     return insoup
 
 
-# Completely deletes selected tags and their contents
 def delete_tags(insoup):
+    """ Completely deletes selected tags and their contents. """
     invalid_tags = ['note', 'space', 'bibl']
     for tag in invalid_tags:
         for match in insoup.find_all(tag):
@@ -86,8 +86,8 @@ def delete_tags(insoup):
     return insoup
 
 
-# Unwraps <choice>...</choice> depending on its contents
 def clean_choice(insoup):
+    """ Unwraps <choice>...</choice> depending on its contents. """
     for match in insoup.find_all('choice'):
         #
         # first case: <orig> nad <reg>:
@@ -104,15 +104,15 @@ def clean_choice(insoup):
     return insoup
 
 
-# Removes all comments from the soup
 def clean_comments(insoup):
+    """ Removes all comments from the soup. """
     comments = insoup.find_all(text=lambda text: isinstance(text, Comment))
     [comment.extract() for comment in comments]
     return insoup
 
 
-# Performs all defined cleanups
 def meta_cleanup(insoup):
+    """ Performs all defined cleanups. """
     cleaners = [clean_comments, clean_choice, simple_tag_cleanup, del_tag_cleanup,
                 add_tag_cleanup, unclear_tag_cleanup, delete_tags, gap_tag_cleanup, ]
     for cleaner in cleaners:

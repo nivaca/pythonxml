@@ -10,10 +10,11 @@ xml_prefix = 'b1d3qun'
 data_path = 'data/'
 files = ['sorb', 'maz', 'vat', 'tara']
 extension = '.xml'
+file_num = len(files)
 
 
 class Witness:
-    """This is the class of witnesses."""
+    """ This is the class of witnesses. """
     def __init__(self, name):
         self.name = name
         self.short_file_name = self.name + extension
@@ -26,37 +27,39 @@ class Witness:
         self.parse_me()
 
     def parse_me(self):
-        """Parses the file to obtain XML data."""
+        """ Parses the file to obtain XML data. """
         self.xml_list = list(parse_file(self.file_name))
         self.xml_ids = [xid[0] for xid in self.xml_list]
         self.paragraphs = [xid[1] for xid in self.xml_list]
         self.len = len(self.xml_ids)
 
     def get_par_by_index(self, index):
-        """Returns the contents of a certain paragraph
-        depending on its numbered index (0-len)."""
+        """ Returns the contents of a certain paragraph
+        depending on its numbered index (0-len). """
         return self.paragraphs[index]
 
     def get_par_by_xmlid(self, xmlid):
-        """Returns the contents of a certain paragraph
-        depending on its xml:id."""
+        """ Returns the contents of a certain paragraph
+        depending on its xml:id. """
         return self.paragraphs[self.xml_ids.index(xmlid)]
 
     def __len__(self):
-        """Returns the number of paragraphs in the witness."""
+        """ Returns the number of paragraphs in the witness. """
         return self.len
 
 
 def parse_file(file):
-    """Parses a given TEI-XML file.
+    """ Parses a given TEI-XML file.
     Returns a list of couples, like so:
-    [('b1d3qun-cdtvet', 'Circa ...'), etc.]"""
+    [('b1d3qun-cdtvet', 'Circa ...'), etc.] """
     soup = BeautifulSoup(open(file), "lxml-xml")
     soup = meta_cleanup(soup)
 
     # Checks whether tag has 'xml:id'
-    def has_attr(tag): return tag.has_attr('xml:id')
+    def has_attr(tag):
+        return tag.has_attr('xml:id')
 
+    # Creates a soup of all <p> tags
     p_soup = soup.find_all(has_attr)
 
     # Creates a list of all and only all <p>
@@ -73,7 +76,7 @@ def parse_file(file):
         buf = clean_str(buf)
         p_tags.append(buf)
 
-    # Gives us a list of all and only all @xml:ids containing "b1d3qun":
+    # Provides a list of all @xml:ids containing "b1d3qun":
     xml_ids = [p["xml:id"] for p in paragraphs]
 
     # Returns a list of tuples of the parsed XML, like so:
@@ -82,7 +85,10 @@ def parse_file(file):
 
 
 def compare_witnesses(fromwit, towit):
-    """Compares two witnesses."""
+    """ Compares two witnesses.
+    Returns a list like so:
+    [[xml:id, (deletions, additions)], etc.] """
+
     # Creates a global list of all XML:IDs (using the first file only)
     xml_ids = fromwit.xml_ids
 
@@ -102,9 +108,6 @@ def compare_witnesses(fromwit, towit):
         to_data = towit.get_par_by_xmlid(xid).lower()
         delta = simplediff.diff(from_data, to_data)
 
-        # result[0] contains deletions
-        # result[1] contains additions
-        result = ()
         for d in delta:
             additions = ''
             deletions = ''
@@ -114,17 +117,16 @@ def compare_witnesses(fromwit, towit):
             if d[0] == '-':
                 deletions = d[1].strip()
                 # print('DEL: ', deletions)
-            result = (deletions, additions)
-        totals.append([xid, result])
+        totals.append([xid, (deletions, additions)])
         bar.update()
 
-    # totals is list structured thus:
+    # totals is a list structured thus:
     # [[xml:id, (deletions, additions)], etc.]
     return totals
 
 
 def check_files(witness):
-    """Checks that all files have the same number of <p>"""
+    """ Checks that all files have the same number of <p> """
     file_num = len(files)
     bar = pyprind.ProgBar(file_num, title='\nChecking files...',
                           stream=sys.stdout, track_time=False)
@@ -139,7 +141,6 @@ def check_files(witness):
 
 
 def main():
-    file_num = len(files)
     bar = pyprind.ProgBar(file_num, title='Parsing files...',
                           stream=sys.stdout, track_time=False)
 
@@ -147,8 +148,8 @@ def main():
     # E.g. wit[0] is a Witness object whose name is contained in file[0].
     # These witnesses are parsed upon creation.
     witness = []
-    for i in range(file_num):
-        witness.append(Witness(files[i]))
+    for file_name in files:
+        witness.append(Witness(file_name))
         bar.update()
     print("OK!")
 
