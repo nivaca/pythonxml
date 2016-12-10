@@ -1,7 +1,7 @@
 import os
 from bs4 import BeautifulSoup
 from xmlcleaners import meta_cleanup, clean_str
-import simplediff
+import diff_match_patch
 from pprint import pprint
 import pyprind
 import sys
@@ -84,7 +84,7 @@ def parse_file(file):
     return list(zip(xml_ids, p_tags))
 
 
-def compare_witnesses(fromwit, towit):
+def diff_witnesses(fromwit, towit):
     """ Compares two witnesses.
     Returns a list like so:
     [[xml:id, (deletions, additions)], etc.] """
@@ -96,29 +96,51 @@ def compare_witnesses(fromwit, towit):
     # and a tuple containing deletions and additions
     totals = []
 
-    # message = '\nComparing ' + fromwit.short_file_name \
-    #           + ' vs. ' + towit.short_file_name
-    message = "\nComparing %s & %s" % \
-              (fromwit.short_file_name, towit.short_file_name)
+    message = f"\nComparing {fromwit.short_file_name} & {towit.short_file_name}..."
     bar = pyprind.ProgBar(len(fromwit), title=message,
                           stream=sys.stdout, track_time=False)
+
+    output = open('output.txt', 'w')
 
     for xid in xml_ids:
         from_data = fromwit.get_par_by_xmlid(xid).lower()
         to_data = towit.get_par_by_xmlid(xid).lower()
-        delta = simplediff.diff(from_data, to_data)
+
+        # create a diff_match_patch object
+        dmp = diff_match_patch.diff_match_patch()
+
+        dmp.Diff_Timeout = 0
+
+        delta = dmp.diff_main(from_data, to_data)
+        dmp.diff_cleanupSemantic(delta)
+
+        # last_xid = ''
 
         for d in delta:
             additions = ''
             deletions = ''
-            if d[0] == '+':
+            if d[0] == 0:
+                pass
+            if d[0] == 1:
                 additions = d[1].strip()
-                # print('ADD: ', additions)
-            if d[0] == '-':
+            if d[0] == -1:
                 deletions = d[1].strip()
-                # print('DEL: ', deletions)
-        totals.append([xid, (deletions, additions)])
+
+            # Only count if there is at least one change
+            # if len(deletions + additions) == 0:
+            #     break
+            #
+            # if last_xid != xid:
+            #     output.write('\n' + xid + '\n')
+            # if len(deletions) > 0:
+            #     output.write('DEL: ' + deletions + '\n')
+            # if len(additions) > 0:
+            #     output.write('ADD: ' + additions + '\n')
+            totals.append([xid, (additions, deletions)])
+
         bar.update()
+
+    output.close()
 
     # totals is a list structured thus:
     # [[xml:id, (deletions, additions)], etc.]
@@ -127,9 +149,10 @@ def compare_witnesses(fromwit, towit):
 
 def check_files(witness):
     """ Checks that all files have the same number of <p> """
-    file_num = len(files)
-    bar = pyprind.ProgBar(file_num, title='\nChecking files...',
-                          stream=sys.stdout, track_time=False)
+    bar = pyprind.ProgBar(file_num,
+                          title=f'\nChecking {file_num} files...',
+                          stream=sys.stdout,
+                          track_time=False)
     for i in range(1, file_num):
         if len(witness[0]) != len(witness[i]):
             print('\nError! Files do not have the same number of <p xml:id="..."> tags!')
@@ -141,7 +164,7 @@ def check_files(witness):
 
 
 def main():
-    bar = pyprind.ProgBar(file_num, title='Parsing files...',
+    bar = pyprind.ProgBar(file_num, title=f'Parsing {file_num} files...',
                           stream=sys.stdout, track_time=False)
 
     # Creates a lists of Witness objects.
@@ -155,12 +178,11 @@ def main():
 
     check_files(witness)
 
-    c1 = compare_witnesses(witness[0], witness[1])
-    # c2 = compare_witnesses(witness[0], witness[2])
-    # c3 = compare_witnesses(witness[0], witness[3])
+    # c1 = diff_witnesses(witness[0], witness[1])
+    c2 = diff_witnesses(witness[0], witness[2])
+    # c3 = diff_witnesses(witness[0], witness[3])
 
-    print(c1)
-
+    print(c2)
 
 
 if __name__ == "__main__":
