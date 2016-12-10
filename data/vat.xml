@@ -1712,6 +1712,9 @@ sufficiunt mihi rationes aliquas tactae de
   <lb ed="#V" n="30"/>bene probatur per idem medium <gap ana="hole in folio"/> quod memoria et intelligentia sunt aequales quoad obiecta
 </p>
 
+  <p xml:id="b1d3qun-atpvac">
+    <!-- Does not exist in #V. -->
+  </p>
 
 <p xml:id="b1d3qun-atphtc">
   <note type="marginalNote" place="marginLeft">ad tertium</note><pc ana="#pilcrow"/>Ad tertium patet quod memoria <corr><add place="marginRight">intelligentia et</add></corr>

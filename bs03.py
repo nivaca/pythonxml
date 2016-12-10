@@ -16,6 +16,7 @@ class Witness:
     """This is the class of witnesses."""
     def __init__(self, name):
         self.name = name
+        self.short_file_name = self.name + extension
         self.file_name =\
             os.path.join(data_path, ''.join([self.name, extension]))
         self.xml_list = []
@@ -27,8 +28,8 @@ class Witness:
     def parse_me(self):
         """Parses the file to obtain XML data."""
         self.xml_list = list(parse_file(self.file_name))
-        self.xml_ids = [id[0] for id in self.xml_list]
-        self.paragraphs = [id[1] for id in self.xml_list]
+        self.xml_ids = [xid[0] for xid in self.xml_list]
+        self.paragraphs = [xid[1] for xid in self.xml_list]
         self.len = len(self.xml_ids)
 
     def get_par_by_index(self, index):
@@ -56,63 +57,108 @@ def parse_file(file):
     # Checks whether tag has 'xml:id'
     def has_attr(tag): return tag.has_attr('xml:id')
 
-    paragraphs = soup.find_all(has_attr)
+    p_soup = soup.find_all(has_attr)
 
-    # This creates a list of all and only all <p> whose xml:id
-    # contains "b1d3qun":
-    parag_list = [p for p in paragraphs if xml_prefix in p["xml:id"]]
+    # Creates a list of all and only all <p>
+    # whose xml:id contain "b1d3qun"
+    paragraphs = [p for p in p_soup if xml_prefix in p["xml:id"]]
 
-    # This creates a list of all and only all <p> whose xml:id
-    # contains "b1d3qun":
-    pa_cont_list = []
-    for parag in parag_list:
+    # Creates a list of all and only all <p> whose @xml:id
+    # contains "b1d3qun"
+    p_tags = []
+    for parag in paragraphs:
         buf = ''
         for pa in parag:
             buf += pa
         buf = clean_str(buf)
-        pa_cont_list.append(buf)
+        p_tags.append(buf)
 
-    # This gives us a list of all and only all @xml:ids containing "b1d3qun":
-    xml_ids = [p["xml:id"] for p in parag_list]
+    # Gives us a list of all and only all @xml:ids containing "b1d3qun":
+    xml_ids = [p["xml:id"] for p in paragraphs]
 
-    # Returns a list of couples of the parsed XML, like so:
+    # Returns a list of tuples of the parsed XML, like so:
     # [('b1d3qun-cdtvet', 'Circa ...'), etc.]
-    datalist = list(zip(xml_ids, pa_cont_list))
-    return datalist
+    return list(zip(xml_ids, p_tags))
 
 
 def compare_witnesses(fromwit, towit):
     """Compares two witnesses."""
-    print('From:', fromwit.name)
-    print('To:', towit.name)
+    # Creates a global list of all XML:IDs (using the first file only)
+    xml_ids = fromwit.xml_ids
+
+    # totals is a list containing the xml_id of the p
+    # and a tuple containing deletions and additions
+    totals = []
+
+    # message = '\nComparing ' + fromwit.short_file_name \
+    #           + ' vs. ' + towit.short_file_name
+    message = "\nComparing %s & %s" % \
+              (fromwit.short_file_name, towit.short_file_name)
+    bar = pyprind.ProgBar(len(fromwit), title=message,
+                          stream=sys.stdout, track_time=False)
+
+    for xid in xml_ids:
+        from_data = fromwit.get_par_by_xmlid(xid).lower()
+        to_data = towit.get_par_by_xmlid(xid).lower()
+        delta = simplediff.diff(from_data, to_data)
+
+        # result[0] contains deletions
+        # result[1] contains additions
+        result = ()
+        for d in delta:
+            additions = ''
+            deletions = ''
+            if d[0] == '+':
+                additions = d[1].strip()
+                # print('ADD: ', additions)
+            if d[0] == '-':
+                deletions = d[1].strip()
+                # print('DEL: ', deletions)
+            result = (deletions, additions)
+        totals.append([xid, result])
+        bar.update()
+
+    # totals is list structured thus:
+    # [[xml:id, (deletions, additions)], etc.]
+    return totals
+
+
+def check_files(witness):
+    """Checks that all files have the same number of <p>"""
+    file_num = len(files)
+    bar = pyprind.ProgBar(file_num, title='\nChecking files...',
+                          stream=sys.stdout, track_time=False)
+    for i in range(1, file_num):
+        if len(witness[0]) != len(witness[i]):
+            print('\nError! Files do not have the same number of <p xml:id="..."> tags!')
+            print('Aborting...')
+            exit(0)
+        bar.update()
+    bar.update()
+    print('OK!')
 
 
 def main():
     file_num = len(files)
-    bar = pyprind.ProgBar(file_num, title='Parsing files...', stream=sys.stdout)
+    bar = pyprind.ProgBar(file_num, title='Parsing files...',
+                          stream=sys.stdout, track_time=False)
 
     # Creates a lists of Witness objects.
     # E.g. wit[0] is a Witness object whose name is contained in file[0].
-    # witness = [Witness(files[i]) for i in range(len(files))]
+    # These witnesses are parsed upon creation.
     witness = []
     for i in range(file_num):
         witness.append(Witness(files[i]))
         bar.update()
+    print("OK!")
 
-    # Creates a global list of all XML:IDs (using the first file only)
-    xml_ids = witness[0].xml_ids
+    check_files(witness)
 
+    c1 = compare_witnesses(witness[0], witness[1])
+    # c2 = compare_witnesses(witness[0], witness[2])
+    # c3 = compare_witnesses(witness[0], witness[3])
 
-    compare_witnesses(witness[0], witness[1])
-
-    # texta = dictionaries[0][1][1]
-    # textb = dictionaries[1][1][1]
-    #
-    # print(texta, '\n', textb)
-    #
-    # delta = simplediff.diff(texta, textb)
-    # for d in delta:
-    #     print(d)
+    print(c1)
 
 
 
