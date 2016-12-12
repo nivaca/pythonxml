@@ -1,7 +1,7 @@
 """ collator.py
 A Simple Python Collator v.0.1
 © 2016 Nicolas Vaughan
-n.vaughan@oxon.org
+nivaca@fastmail.com
 Runs on Python 3.5+
 Requires: BeautifulSoup 4, diff_match_patch """
 
