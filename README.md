@@ -22,13 +22,30 @@ The `diff-match-patch` module can be installed in the following way (Linux or Ma
 pip install diff-match-patch
 ```
 
+### Why Python 3.6+?
+Python 3.6 introduces a nice way of managing formatted string literals. See [PEP 498](https://www.python.org/dev/peps/pep-0498/). Our scripts make use of that new feature. 
+
+If the user wishes use a previous version of Python 3 (not Python 2!), he/she may simply change the formatted string literals. For example:
+
+```python
+message = f'\nChecking {file_num} files...'
+```
+
+should be changed to:
+
+```python
+message = '\nChecking %d files...' %file_num 
+```
+
+
 ## Tests
 To test the scripts, simply run `python3 collator.py` inside the downloaded directory structure.
 
 ## Contributors
 Nicolas Vaughan (n.vaughan [at] uniandes.edu.co).
+
 Universidad de los Andes, Bogotá, Colombia.
 
 ## License
-Creative Commons Attribution-NonCommercial 3.0
-Unported (CC BY-NC 3.0) http://creativecommons.org/licenses/by-nc/3.0/
+Creative Commons Attribution-NonCommercial 3.0 Unported (CC BY-NC 3.0) 
+http://creativecommons.org/licenses/by-nc/3.0/
