@@ -1,8 +1,9 @@
 """ collator.py
-A Simple Python Collator v.0.1.
-By Nicolas Vaughan (© 2016).
-Runs on Python 3.5+.
-Requires: BeautifulSoup 4, diff_match_patch."""
+A Simple Python Collator v.0.1
+© 2016 Nicolas Vaughan
+n.vaughan@oxon.org
+Runs on Python 3.5+
+Requires: BeautifulSoup 4, diff_match_patch """
 
 import os
 from bs4 import BeautifulSoup

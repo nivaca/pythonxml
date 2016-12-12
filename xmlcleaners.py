@@ -1,8 +1,9 @@
 """ xmlcleaners.py
-Part of A Simple Python Collator v.0.1.
-© 2016 Nicolas Vaughan.
-Runs on Python 3.5+.
-Requires: BeautifulSoup 4. """
+Part of A Simple Python Collator v.0.1
+© 2016 Nicolas Vaughan
+n.vaughan@oxon.org
+Runs on Python 3.5+
+Requires: BeautifulSoup 4 """
 
 
 from bs4 import Comment
