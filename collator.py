@@ -11,7 +11,6 @@ import diff_match_patch
 import pyprind
 import sys
 # import logging
-import re
 
 
 xml_prefix = 'b1d3qun'
