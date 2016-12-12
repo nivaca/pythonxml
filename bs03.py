@@ -191,8 +191,14 @@ def diff_witnesses(fromwit, towit):
 
         for d in delta:
             change = d[1].strip()
+
+            # Skip one for loop if no changes found.
             if d[0] == 0 or len(change) == 0:
                 continue
+
+            # Checks if any changes were found and
+            # thus need to be written. The value
+            # of 1 takes into account the initial '|'.
             if d[0] == 1:
                 additions = additions + change + '|'
             if d[0] == -1:
