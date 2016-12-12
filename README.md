@@ -11,7 +11,7 @@ Python3 scripts to diff TEI-XML files
 ## Detailed Description
 This script parses all the TEI-XML files in the `/data` directory, and compares them using the `diff-match-patch` algorithm by Google. The script can then return an output text file (`output.txt`) and/or html-prettified file (`output.html`) containing the diff of the files.
 
-The source TEI-XML files have to be encoded following the *LombardPress Diplomatic Transcription Guidelines*. (See https://github.com/lombardpress/lombardpress-schema/blob/develop/docs/1.0/diplomatic/index.md) This makes sure, amongst other things, that all witnesses being compared have the same structure (same number of `<p>` elements, same `@xml:id`s for the `<p>`s, etc.).
+The source TEI-XML files have to be encoded following the *LombardPress Diplomatic Transcription Guidelines*. (See https://github.com/lombardpress/lombardpress-schema/blob/develop/docs/1.0/diplomatic/index.md) This makes sure, amongst other things, that all witnesses being compared have the same structure (same number of `<p>` elements, same `@xml:id`s for the `<p>` elements, etc.).
 
 ## Installation
 Clone the GitHub repository. Put your source TEI-XML files in the `\data` directory. (This can be changed in the global variable `directory` in the `collator.py` file.) Make sure all module requirements have been fulfilled. 
@@ -45,7 +45,7 @@ To test the scripts, simply run
 $ python3 collator.py
 ```
 
-from inside the downloaded directory structure.
+from within the downloaded directory structure.
 
 ## Contributors
 Nicolas Vaughan (n.vaughan [at] uniandes.edu.co).
