@@ -1,5 +1,17 @@
+""" xmlcleaners.py
+Part of A Simple Python Collator v.0.1.
+© 2016 Nicolas Vaughan.
+Runs on Python 3.5+.
+Requires: BeautifulSoup 4. """
+
+
 from bs4 import Comment
 import re
+
+
+# def clean_before_diff(thetext):
+#     thetext = re.sub(r'[¿.+-_?:]', '', thetext)
+#     return thetext
 
 
 def clean_str(thetext):

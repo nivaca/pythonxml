@@ -2,8 +2,7 @@
 A Simple Python Collator v.0.1.
 By Nicolas Vaughan (© 2016).
 Runs on Python 3.5+.
-Requires: BeautifulSoup 4, diff_match_patch
-"""
+Requires: BeautifulSoup 4, diff_match_patch."""
 
 import os
 from bs4 import BeautifulSoup
@@ -14,7 +13,6 @@ import sys
 # import logging
 import re
 
-# logging.basicConfig(filename='logfile.txt', level=logging.INFO, filemode='w')
 
 xml_prefix = 'b1d3qun'
 data_path = 'data/'
