@@ -1,5 +1,5 @@
 """ collator.py
-A Simple Python Collator v.0.1
+A Simple Python Collator v.0.2
 © 2016 Nicolas Vaughan
 nivaca@fastmail.com
 Runs on Python 3.5+
@@ -8,17 +8,23 @@ Requires: BeautifulSoup 4, diff_match_patch """
 import os
 from bs4 import BeautifulSoup
 from xmlcleaners import meta_cleanup, clean_str
-import diff_match_patch
+import diff_match_patch as gdmp
 import pyprind
 import sys
 # import logging
 
+# logging.basicConfig(filename='logfile.txt', level=logging.INFO, filemode='w')
 
 xml_prefix = 'b1d3qun'
 data_path = 'data/'
 files = ['sorb', 'maz', 'vat', 'tara']
 # files = ['s', 'm', 'v', 't']
 extension = '.xml'
+
+# collation_type can have: 'html', 'textual', or 'both'
+# default is 'both'
+collation_type = 'both'
+
 file_num = len(files)
 
 
@@ -67,7 +73,7 @@ class Witness:
 
 class Collation:
     """ This is the class of collations. """
-    def __init__(self, c_id, from_wit, to_wit):
+    def __init__(self, c_id, from_wit, to_wit, kind):
         self.c_id = c_id
         # from-Witness
         self.from_wit = from_wit
@@ -76,13 +82,19 @@ class Collation:
         self.to_wit = to_wit
         self.to_wit_id = to_wit.id
         self.data = []
-        self.run()
+        if kind is None:
+            self.kind = 'textual'
+        else:
+            self.kind = kind
+        self.run(self.kind)
 
 
-    def run(self):
+    def run(self, kind):
         """ Calls diff_witnesses() over the two wits. """
-        self.data = diff_witnesses(self.from_wit, self.to_wit)
-
+        if kind == 'textual':
+            self.data = textual_diff_witnesses(self.from_wit, self.to_wit)
+        elif kind == 'html':
+            self.data = html_diff_witnesses(self.from_wit, self.to_wit)
 
 # =========================================================
 
@@ -151,9 +163,7 @@ def check_files(witness):
     return
 
 
-
-
-def diff_witnesses(fromwit, towit):
+def textual_diff_witnesses(fromwit, towit):
     """ Compares two witnesses.
     Returns a list like so:
     [[xml:id, (deletions, additions)], etc.] """
@@ -177,7 +187,7 @@ def diff_witnesses(fromwit, towit):
 
 
         # create a diff_match_patch object
-        dmp = diff_match_patch.diff_match_patch()
+        dmp = gdmp.diff_match_patch()
 
         dmp.Diff_Timeout = 0
 
@@ -189,8 +199,14 @@ def diff_witnesses(fromwit, towit):
 
         for d in delta:
             change = d[1].strip()
+
+            # Skip one for loop if no changes found.
             if d[0] == 0 or len(change) == 0:
                 continue
+
+            # Checks if any changes were found and
+            # thus need to be written. The value
+            # of 1 takes into account the initial '|'.
             if d[0] == 1:
                 additions = additions + change + '|'
             if d[0] == -1:
@@ -206,16 +222,15 @@ def diff_witnesses(fromwit, towit):
     return totals
 
 
-
-
-def collate(witness):
+def textual_collate(witness):
     """ Performs collation between all witnesses.
     Takes the Witness list as argument. """
 
     # This list will hold the Collation objects.
     # Only (file_num - 1) collations will be created.
     collation = \
-        [Collation(i, witness[0], witness[i + 1]) for i in range(file_num - 1)]
+        [Collation(i, witness[0], witness[i + 1], 'textual')
+         for i in range(file_num - 1)]
 
     out_file = open('output.txt', 'w')
 
@@ -223,8 +238,6 @@ def collate(witness):
 
     bar = pyprind.ProgBar(len(witness[0]), title='\nWriting output.txt',
                           stream=sys.stdout, track_time=False)
-
-    last_id = ''
 
     # This first loop will be repeated the number of
     # XML-IDs.
@@ -243,20 +256,17 @@ def collate(witness):
             # this is the id of the from-witness
             to_wit_id = coll.to_wit_id
 
-            if xid != last_id:
+            if collation.index(coll) == 0:
                 out_file.write('\n\n--------------\n')
                 out_file.write(f'{xid} (¶{i+1})')
                 out_file.write('\n--------------\n')
                 out_file.write(coll.from_wit_id + '\n')
                 out_file.write(witness[0].get_par_by_index(i) + '\n')
             out_file.write('\n' + to_wit_id + '\n')
-            # out_file.write(coll.to_wit.get_par_by_index(i) + '\n')
             if len(deletions) > 1:
                 out_file.write('˜˜˜ ' + deletions + '\n')
             if len(additions) > 1:
                 out_file.write('+++ ' + additions + '\n')
-
-            last_id = xid
 
         bar.update()
 
@@ -264,6 +274,104 @@ def collate(witness):
     return
 
 
+def html_diff_witnesses(fromwit, towit):
+    """ Compares two witnesses.
+    Returns a list like so: """
+
+    # Creates a global list of all XML:IDs (using the first file only)
+    xml_ids = fromwit.xml_ids
+
+    # totals is a list containing the xml_id of the p
+    # and a tuple containing deletions and additions
+    totals = []
+
+    message = f"\nComparing {fromwit.id} and {towit.id}"
+    bar = pyprind.ProgBar(len(fromwit), title=message,
+                          stream=sys.stdout, track_time=False)
+
+    for xid in xml_ids:
+        from_data = \
+            fromwit.get_par_by_xmlid(xid).lower()
+        to_data = \
+            towit.get_par_by_xmlid(xid).lower()
+
+
+        # create a diff_match_patch object
+        dmp = gdmp.diff_match_patch()
+
+        dmp.Diff_Timeout = 0
+
+        diffs = dmp.diff_main(from_data, to_data)
+        dmp.diff_cleanupSemantic(diffs)
+
+        htmlSnippet = dmp.diff_prettyHtml(diffs)
+
+        totals.append(htmlSnippet)
+        bar.update()
+
+    print('OK!')
+
+    # totals is a list structured thus:
+    # [(deletions, additions), etc.]
+    return totals
+
+
+def html_collate(witness):
+    """ Performs collation between all witnesses.
+    Takes the Witness list as argument.
+    Returns a list containing html items."""
+
+    # This list will hold the Collation objects.
+    # Only (file_num - 1) collations will be created.
+    collation = \
+        [Collation(i, witness[0], witness[i + 1], 'html')
+         for i in range(file_num - 1)]
+
+    out_file = open('output.html', 'w')
+
+    out_file.write("""
+    <!DOCTYPE html>
+    <meta charset="UTF-8">
+    <html>
+    <body>
+
+    """)
+
+    xml_ids = witness[0].xml_ids
+
+    bar = pyprind.ProgBar(len(witness[0]), title='\nWriting output.html',
+                          stream=sys.stdout, track_time=False)
+
+    # This first loop will be repeated the number of
+    # XML-IDs.
+    # It will collate each <p>.
+    for i in range(len(witness[0])):
+
+        xid = xml_ids[i]
+
+        # This second loop will be repeated the number of
+        # collations done before (file_num - 1)
+
+        for coll in collation:
+            # coll.data[i] is the data with index i
+            data = coll.data[i]
+
+            # this is the id of the from-witness
+            to_wit_id = coll.to_wit_id
+
+            if collation.index(coll) == 0:
+                out_file.write(f'<h1>{xid} (¶{i+1})</h1>\n')
+            # out_file.write(f'<h2>{coll.from_wit_id}</h2>\n')
+            # out_file.write(witness[0].get_par_by_index(i) + '\n')
+            out_file.write(f'<h2>{to_wit_id}</h2>')
+            # out_file.write(coll.to_wit.get_par_by_index(i) + '\n')
+            out_file.write(f'{data}')
+
+        bar.update()
+
+    out_file.write("\n\n</body>\n</html>")
+    out_file.close()
+    return
 
 
 def main():
@@ -282,7 +390,13 @@ def main():
 
     check_files(witness)
 
-    collate(witness)
+    if collation_type == 'textual':
+        textual_collate(witness)
+    elif collation_type == 'html':
+        html_collate(witness)
+    else:
+        textual_collate(witness)
+        html_collate(witness)
 
 if __name__ == "__main__":
     main()

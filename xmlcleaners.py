@@ -1,5 +1,5 @@
 """ xmlcleaners.py
-Part of A Simple Python Collator v.0.1
+Part of A Simple Python Collator v.0.2
 © 2016 Nicolas Vaughan
 nivaca@fastmail.com
 Runs on Python 3.5+
@@ -16,10 +16,11 @@ import re
 
 
 def clean_str(thetext):
-    thetext = re.sub("\n", " ", thetext)
-    thetext = re.sub("\t{1,8}", " ", thetext)
-    thetext = re.sub("[ ]{2,8}", " ", thetext)
-    thetext = re.sub("[ ]{2,8}", " ", thetext)
+    thetext = re.sub(r"\n", " ", thetext)
+    thetext = re.sub(r"[.,:;]", " ", thetext)
+    thetext = re.sub(r"\t{1,8}", " ", thetext)
+    thetext = re.sub(r"[ ]{2,8}", " ", thetext)
+    thetext = re.sub(r"[ ]{2,8}", " ", thetext)
     # thetext = re.sub("\n", " ", thetext)
     return thetext
 
@@ -63,8 +64,8 @@ def add_tag_cleanup(insoup):
 def del_tag_cleanup(insoup):
     """ <del>xxx</del>  =>  _xxx_ """
     for match in insoup.find_all('del'):
-        match.insert_before('_')
-        match.insert_after('_')
+        match.insert_before('-')
+        match.insert_after('-')
         match.unwrap()
     return insoup
 
