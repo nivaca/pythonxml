@@ -1,7 +1,8 @@
 """ collator.py
 A Simple Python Collator v.0.2
 © 2016 Nicolas Vaughan
-nivaca@fastmail.com
+n.vaughan@uniandes.edu.co
+Universidad de los Andes, Colombia
 Runs on Python 3.6+
 Requires: BeautifulSoup 4, diff_match_patch """
 
