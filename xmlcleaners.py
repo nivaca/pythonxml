@@ -2,7 +2,7 @@
 Part of A Simple Python Collator v.0.2
 © 2016 Nicolas Vaughan
 nivaca@fastmail.com
-Runs on Python 3.5+
+Runs on Python 3.6+
 Requires: BeautifulSoup 4 """
 
 
@@ -44,36 +44,36 @@ def clean_str(thetext):
 
 
 def unclear_tag_cleanup(insoup):
-    """ <unclear>xxx</unclear>  =>  ¿xxx¿ """
+    """ <unclear>xxx</unclear>  =>  ¿xxx? """
     for match in insoup.find_all('unclear'):
         match.insert_before('¿')
-        match.insert_after('¿')
+        match.insert_after('?')
         match.unwrap()
     return insoup
 
 
 def add_tag_cleanup(insoup):
-    """ <add>xxx</add>  =>  +xxx+ """
+    """ <add>xxx</add>  =>  <xxx> """
     for match in insoup.find_all('add'):
-        match.insert_before('+')
-        match.insert_after('+')
+        match.insert_before('<')
+        match.insert_after('>')
         match.unwrap()
     return insoup
 
 
 def del_tag_cleanup(insoup):
-    """ <del>xxx</del>  =>  _xxx_ """
+    """ <del>xxx</del>  => [xxx] """
     for match in insoup.find_all('del'):
-        match.insert_before('-')
-        match.insert_after('-')
+        match.insert_before('[')
+        match.insert_after(']')
         match.unwrap()
     return insoup
 
 
 def gap_tag_cleanup(insoup):
-    """ <gap/>  =>  ¿…¿ """
+    """ <gap/>  =>  /// """
     for match in insoup.find_all('gap'):
-        match.insert_before('¿…¿')
+        match.insert_before("""///""")
         match.decompose()
     return insoup
 

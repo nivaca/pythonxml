@@ -2,39 +2,64 @@
 A Simple Python Collator v.0.2
 © 2016 Nicolas Vaughan
 nivaca@fastmail.com
-Runs on Python 3.5+
+Runs on Python 3.6+
 Requires: BeautifulSoup 4, diff_match_patch """
 
 import os
-from bs4 import BeautifulSoup
-from xmlcleaners import meta_cleanup, clean_str
-import diff_match_patch as gdmp
-import pyprind
 import sys
-# import logging
+from bs4 import BeautifulSoup
 
-# logging.basicConfig(filename='logfile.txt', level=logging.INFO, filemode='w')
+try:
+    import diff_match_patch as gdmp
+except ImportError:
+    print('diff_match_patch module not available')
+    print('Aborting...')
+    exit(0)
+
+try:
+    import pyprind
+except ImportError:
+    print('Warning: pyrind module not available')
+    pyprind_exists = False
+else:
+    pyprind_exists = True
+
+try:
+    from xmlcleaners import meta_cleanup, clean_str
+except ImportError:
+    print('xmlcleaners module not available')
+    print('Aborting...')
+    exit(0)
+
+
+# +++++++++++++++++++ GLOBAL VARIABLES +++++++++++++++++++++
+
+# Name of the main witness against which all other
+# witnesses will be compared.
+# If left empty, the script selects the first alphabetically.
+main_wit = 'sorb'
 
 xml_prefix = 'b1d3qun'
-data_path = 'data/'
-files = ['sorb', 'maz', 'vat', 'tara']
-# files = ['s', 'm', 'v', 't']
-extension = '.xml'
+
+
+default_ext = '.xml'
+directory = 'data/'                   # leave empty for CWD
 
 # collation_type can have: 'html', 'textual', or 'both'
 # default is 'both'
 collation_type = 'both'
 
-file_num = len(files)
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
 
 
 class Witness:
     """ This is the class of witnesses. """
     def __init__(self, name):
         self.name = name
-        self.short_file_name = self.name + extension
+        self.short_file_name = self.name + default_ext
         self.file_name =\
-            os.path.join(data_path, ''.join([self.name, extension]))
+            os.path.join(directory, ''.join([self.name, default_ext]))
         self.xml_list = []
         self.xml_ids = []
         self.paragraphs = []
@@ -96,8 +121,49 @@ class Collation:
         elif kind == 'html':
             self.data = html_diff_witnesses(self.from_wit, self.to_wit)
 
+
+# =========================================================
 # =========================================================
 
+
+def get_files():
+    """ Returns the list of names of the xml files
+    in the data directory. """
+
+    fnames = os.listdir(directory + '.')
+    file_list = []
+
+    for file in fnames:
+        fname = os.path.splitext(file)[0]
+        fext = os.path.splitext(file)[1]
+        # check whether file has required extension
+        if fext == default_ext:
+            file_list += [fname]
+
+    file_list = sorted(file_list)
+
+    if len(file_list) == 0:
+        print("Error: No XML files to process")
+        exit(0)
+    return file_list
+
+
+def sort_witnesses(witness):
+    """ Makes witness[0] be the main witness,
+    according to the value of main_wit. """
+
+    main_wit_id = 0
+
+    for wit in witness:
+        if main_wit == wit.name:
+            main_wit_id = witness.index(wit)
+
+    if main_wit_id != 0:
+        temp = witness[0]
+        witness[0] = witness[main_wit_id]
+        witness[main_wit_id] = temp
+
+    return witness
 
 
 def get_wit_id(file):
@@ -148,17 +214,28 @@ def parse_file(file):
 
 def check_files(witness):
     """ Checks that all files have the same number of <p> """
-    bar = pyprind.ProgBar(file_num,
-                          title=f'\nChecking {file_num} files...',
-                          stream=sys.stdout,
-                          track_time=False)
+
+    file_num = len(get_files())
+
+    message = f'\nChecking {file_num} files...'
+
+    if pyprind_exists:
+        bar = pyprind.ProgBar(file_num,
+                              title=message,
+                              stream=sys.stdout,
+                              track_time=False)
+    else:
+        print(message)
+
     for i in range(1, file_num):
         if len(witness[0]) != len(witness[i]):
             print('\nError! Files do not have the same number of <p xml:id="..."> tags!')
             print('Aborting...')
             exit(0)
+
+    if pyprind_exists:
         bar.update()
-    bar.update()
+
     print('OK!')
     return
 
@@ -176,8 +253,12 @@ def textual_diff_witnesses(fromwit, towit):
     totals = []
 
     message = f"\nComparing {fromwit.id} and {towit.id}"
-    bar = pyprind.ProgBar(len(fromwit), title=message,
-                          stream=sys.stdout, track_time=False)
+
+    if pyprind_exists:
+        bar = pyprind.ProgBar(len(fromwit), title=message,
+                              stream=sys.stdout, track_time=False)
+    else:
+        print(message)
 
     for xid in xml_ids:
         from_data = \
@@ -213,7 +294,9 @@ def textual_diff_witnesses(fromwit, towit):
                 deletions = deletions + change + '|'
 
         totals.append((additions, deletions))
-        bar.update()
+
+        if pyprind_exists:
+            bar.update()
 
     print('OK!')
 
@@ -226,6 +309,8 @@ def textual_collate(witness):
     """ Performs collation between all witnesses.
     Takes the Witness list as argument. """
 
+    file_num = len(get_files())
+
     # This list will hold the Collation objects.
     # Only (file_num - 1) collations will be created.
     collation = \
@@ -236,8 +321,13 @@ def textual_collate(witness):
 
     xml_ids = witness[0].xml_ids
 
-    bar = pyprind.ProgBar(len(witness[0]), title='\nWriting output.txt',
-                          stream=sys.stdout, track_time=False)
+    message = '\nWriting output.txt'
+
+    if pyprind_exists:
+        bar = pyprind.ProgBar(len(witness[0]), title=message,
+                              stream=sys.stdout, track_time=False)
+    else:
+        print(message)
 
     # This first loop will be repeated the number of
     # XML-IDs.
@@ -268,7 +358,8 @@ def textual_collate(witness):
             if len(additions) > 1:
                 out_file.write('+++ ' + additions + '\n')
 
-        bar.update()
+        if pyprind_exists:
+            bar.update()
 
     out_file.close()
     return
@@ -286,8 +377,11 @@ def html_diff_witnesses(fromwit, towit):
     totals = []
 
     message = f"\nComparing {fromwit.id} and {towit.id}"
-    bar = pyprind.ProgBar(len(fromwit), title=message,
-                          stream=sys.stdout, track_time=False)
+    if pyprind_exists:
+        bar = pyprind.ProgBar(len(fromwit), title=message,
+                              stream=sys.stdout, track_time=False)
+    else:
+        print(message)
 
     for xid in xml_ids:
         from_data = \
@@ -307,7 +401,9 @@ def html_diff_witnesses(fromwit, towit):
         htmlSnippet = dmp.diff_prettyHtml(diffs)
 
         totals.append(htmlSnippet)
-        bar.update()
+
+        if pyprind_exists:
+            bar.update()
 
     print('OK!')
 
@@ -320,6 +416,8 @@ def html_collate(witness):
     """ Performs collation between all witnesses.
     Takes the Witness list as argument.
     Returns a list containing html items."""
+
+    file_num = len(get_files())
 
     # This list will hold the Collation objects.
     # Only (file_num - 1) collations will be created.
@@ -339,8 +437,13 @@ def html_collate(witness):
 
     xml_ids = witness[0].xml_ids
 
-    bar = pyprind.ProgBar(len(witness[0]), title='\nWriting output.html',
-                          stream=sys.stdout, track_time=False)
+    message = '\nWriting output.html'
+
+    if pyprind_exists:
+        bar = pyprind.ProgBar(len(witness[0]), title=message,
+                              stream=sys.stdout, track_time=False)
+    else:
+        print(message)
 
     # This first loop will be repeated the number of
     # XML-IDs.
@@ -367,7 +470,8 @@ def html_collate(witness):
             # out_file.write(coll.to_wit.get_par_by_index(i) + '\n')
             out_file.write(f'{data}')
 
-        bar.update()
+        if pyprind_exists:
+            bar.update()
 
     out_file.write("\n\n</body>\n</html>")
     out_file.close()
@@ -376,8 +480,18 @@ def html_collate(witness):
 
 def main():
     """ Main function. """
-    bar = pyprind.ProgBar(file_num, title=f'Parsing {file_num} files...',
-                          stream=sys.stdout, track_time=False)
+
+    # Creates a list of xml files from the data dir
+    files = get_files()
+    file_num = len(files)
+
+    message = f'Parsing {file_num} files...'
+
+    if pyprind_exists:
+        bar = pyprind.ProgBar(file_num, title=message,
+                              stream=sys.stdout, track_time=False)
+    else:
+        print(message)
 
     # Creates a lists of Witness objects.
     # E.g. wit[0] is a Witness object whose name is contained in file[0].
@@ -385,18 +499,27 @@ def main():
     witness = []
     for file_name in files:
         witness.append(Witness(file_name))
-        bar.update()
+        if pyprind_exists:
+            bar.update()
+
+    witness = sort_witnesses(witness)
     print("OK!")
 
     check_files(witness)
 
     if collation_type == 'textual':
+        print('\n\nStarting textual collation')
         textual_collate(witness)
     elif collation_type == 'html':
+        print('\n\nStarting html collation')
         html_collate(witness)
     else:
+        print('\n\nStarting textual collation')
         textual_collate(witness)
+        print('\n\nStarting html collation')
         html_collate(witness)
+
+    print('Finished!')
 
 if __name__ == "__main__":
     main()
