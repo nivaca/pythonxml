@@ -44,6 +44,12 @@ should be changed to:
 message = '\nChecking %d files...' %file_num 
 ```
 
+or to:
+
+```python
+message = '\nChecking {} files...'.format(file_num) 
+```
+
 
 ## Tests
 To test the scripts, simply run 
