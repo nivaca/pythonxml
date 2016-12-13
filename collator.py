@@ -216,8 +216,6 @@ def parse_file(file):
 def check_files(witness):
     """ Checks that all files have the same number of <p> """
 
-    file_num = len(get_files())
-
     message = f'\nChecking {file_num} files...'
 
     if pyprind_exists:
@@ -244,7 +242,7 @@ def check_files(witness):
 def textual_diff_witnesses(fromwit, towit):
     """ Compares two witnesses.
     Returns a list like so:
-    [[xml:id, (deletions, additions)], etc.] """
+    [[xml:id, (deletions, additions)], etc.]. """
 
     # Creates a global list of all XML:IDs (using the first file only)
     xml_ids = fromwit.xml_ids
@@ -309,8 +307,6 @@ def textual_diff_witnesses(fromwit, towit):
 def textual_collate(witness):
     """ Performs collation between all witnesses.
     Takes the Witness list as argument. """
-
-    file_num = len(get_files())
 
     # This list will hold the Collation objects.
     # Only (file_num - 1) collations will be created.
@@ -418,8 +414,6 @@ def html_collate(witness):
     Takes the Witness list as argument.
     Returns a list containing html items."""
 
-    file_num = len(get_files())
-
     # This list will hold the Collation objects.
     # Only (file_num - 1) collations will be created.
     collation = \
@@ -433,7 +427,6 @@ def html_collate(witness):
     <meta charset="UTF-8">
     <html>
     <body>
-
     """)
 
     xml_ids = witness[0].xml_ids
@@ -474,7 +467,7 @@ def html_collate(witness):
         if pyprind_exists:
             bar.update()
 
-    out_file.write("\n\n</body>\n</html>")
+    out_file.write("</body>\n</html>")
     out_file.close()
     return
 
@@ -484,6 +477,7 @@ def main():
 
     # Creates a list of xml files from the data dir
     files = get_files()
+    global file_num
     file_num = len(files)
 
     message = f'Parsing {file_num} files...'
