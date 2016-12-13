@@ -23,7 +23,7 @@ To install BeautifulSoup 4, the simplest way is using `pip`:
 pip install beautifulsoup4
 ```
 
-The `diff-match-patch` module can be installed in the following way (Linux or MacOS):
+The `diff-match-patch` module can be installed in the following way:
 
 ```bash
 pip install diff-match-patch
