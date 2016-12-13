@@ -15,7 +15,7 @@ This script parses all the TEI-XML files in the `/data` directory, and compares 
 The source TEI-XML files have to be encoded following the *LombardPress Diplomatic Transcription Guidelines*. (See https://github.com/lombardpress/lombardpress-schema/blob/develop/docs/1.0/diplomatic/index.md) This makes sure, amongst other things, that all witnesses being compared have the same structure (same number of `<p>` elements, same `@xml:id`s for the `<p>` elements, etc.).
 
 ## Installation
-Clone the GitHub repository. Put your source TEI-XML files in the `\data` directory. (This can be changed in the global variable `directory` in the `collator.py` file.) Make sure all module requirements have been fulfilled. 
+Clone the GitHub repository. Put your source TEI-XML files in the `\data` directory. (This can be changed in the global variable `directory` in the `collator.py` file.) Make sure all module requirements have been fulfilled.
 
 To install BeautifulSoup 4, the simplest way is using `pip`:
 
@@ -30,7 +30,7 @@ pip install diff-match-patch
 ```
 
 ### Why Python 3.6+?
-Python 3.6 introduces---amongst several nice changes---a powerful way of managing formatted string literals. (See [PEP 498](https://www.python.org/dev/peps/pep-0498/)). Our scripts make use of that new feature. 
+Python 3.6 introduced—amongst several nice changes—a powerful way of managing formatted string literals. (See [PEP 498](https://www.python.org/dev/peps/pep-0498/)). Our scripts make use of that new feature.
 
 If the user wishes to use a previous version of Python 3 (not Python 2!), he/she may simply change the formatted string literals. For example:
 
@@ -41,18 +41,18 @@ message = f'\nChecking {file_num} files...'
 should be changed to:
 
 ```python
-message = '\nChecking %d files...' %file_num 
+message = '\nChecking %d files...' %file_num
 ```
 
 or to:
 
 ```python
-message = '\nChecking {} files...'.format(file_num) 
+message = '\nChecking {} files...'.format(file_num)
 ```
 
 
 ## Tests
-To test the scripts, simply run 
+To test the scripts, simply run
 
 ```bash
 $ python3 collator.py
@@ -66,5 +66,5 @@ Nicolas Vaughan (n.vaughan [at] uniandes.edu.co).
 Universidad de los Andes, Bogotá, Colombia.
 
 ## License
-Creative Commons Attribution-NonCommercial 3.0 Unported (CC BY-NC 3.0) 
+Creative Commons Attribution-NonCommercial 3.0 Unported (CC BY-NC 3.0)
 http://creativecommons.org/licenses/by-nc/3.0/
