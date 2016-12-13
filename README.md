@@ -5,6 +5,7 @@ Python3 scripts to diff TEI-XML files
 
 ## Requirements
 * Python 3.6+
+* BeautifulSoup 4
 * google-diff-match-patch Python 3 module (https://bitbucket.org/cowwoc/google-diff-match-patch/src)
 * pyprind module (https://github.com/rasbt/pyprind) [Optional. This is module to display nice progress bars. If not found, the scripts will display a warning but continue running without problems.]
 
@@ -15,6 +16,12 @@ The source TEI-XML files have to be encoded following the *LombardPress Diplomat
 
 ## Installation
 Clone the GitHub repository. Put your source TEI-XML files in the `\data` directory. (This can be changed in the global variable `directory` in the `collator.py` file.) Make sure all module requirements have been fulfilled. 
+
+To install BeautifulSoup 4, the simplest way is using `pip`:
+
+```bash
+pip install beautifulsoup4
+```
 
 The `diff-match-patch` module can be installed in the following way (Linux or MacOS):
 
