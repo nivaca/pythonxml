@@ -60,6 +60,11 @@ $ python3 collator.py
 
 from within the downloaded directory structure.
 
+## TODO
+- Incorporate Python 3.6's new async methods.
+- LaTeX output
+- ORG Mode output
+
 ## Contributors
 Nicolas Vaughan (n.vaughan [at] uniandes.edu.co).
 
