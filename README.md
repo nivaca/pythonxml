@@ -6,6 +6,7 @@ Python3 scripts to diff TEI-XML files
 ## Requirements
 * Python 3.6+
 * BeautifulSoup 4
+* lxml
 * google-diff-match-patch Python 3 module (https://bitbucket.org/cowwoc/google-diff-match-patch/src)
 * pyprind module (https://github.com/rasbt/pyprind) [Optional. This is module to display nice progress bars. If not found, the scripts will display a warning but continue running without problems.]
 
@@ -22,6 +23,13 @@ To install BeautifulSoup 4, the simplest way is using `pip`:
 ```bash
 pip install beautifulsoup4
 ```
+
+To install lxml, the simplest way is using `pip`:
+
+```bash
+pip install lxml
+```
+
 
 The `diff-match-patch` module can be installed in the following way:
 

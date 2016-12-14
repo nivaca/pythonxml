@@ -219,7 +219,7 @@ def check_files(witness):
     message = f'\nChecking {file_num} files...'
 
     if pyprind_exists:
-        bar = pyprind.ProgBar(file_num,
+        bar = pyprind.ProgBar((file_num - 1),
                               title=message,
                               stream=sys.stdout,
                               track_time=False)
@@ -232,8 +232,8 @@ def check_files(witness):
             print('Aborting...')
             exit(0)
 
-    if pyprind_exists:
-        bar.update()
+        if pyprind_exists:
+            bar.update()
 
     print('OK!')
     return
