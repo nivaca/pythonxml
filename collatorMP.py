@@ -50,7 +50,7 @@ directory = 'data/'                   # leave empty for CWD
 
 # collation_type can have: 'html', 'textual', or 'both'
 # default is 'both'
-collation_type = 'textual'
+collation_type = 'both'
 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -317,13 +317,8 @@ def textual_collate(witnesses):
         [TCollation(i, witnesses[0], witnesses[i + 1])
          for i in range(file_num - 1)]
 
-
-    processes = []
     for coll in collations:
-        processes.append(multiprocessing.Process(target=coll.run(), args=''))
-
-    for th in processes:
-        th.start()
+        coll.run()
 
     out_file = open('output.txt', 'w')
 
@@ -431,12 +426,8 @@ def html_collate(witnesses):
         [HCollation(i, witnesses[0], witnesses[i + 1])
          for i in range(file_num - 1)]
 
-    processes = []
     for coll in collations:
-        processes.append(multiprocessing.Process(target=coll.run(), args=''))
-
-    for th in processes:
-        th.start()
+        coll.run()
 
     out_file = open('output.html', 'w')
 
@@ -534,7 +525,8 @@ def main():
         textual_collate(witnesses)
     elif collation_type == 'html':
         print('\n\nStarting html collation')
-        html_collate(witnesses)
+        # html_collate(witnesses)
+
     else:
         print('\n\nStarting textual collation')
         textual_collate(witnesses)
