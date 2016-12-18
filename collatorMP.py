@@ -9,6 +9,7 @@ Requires: BeautifulSoup 4, diff_match_patch """
 import os
 import sys
 from bs4 import BeautifulSoup
+import multiprocessing
 import time
 
 try:
@@ -49,7 +50,7 @@ directory = 'data/'                   # leave empty for CWD
 
 # collation_type can have: 'html', 'textual', or 'both'
 # default is 'both'
-collation_type = 'both'
+collation_type = 'textual'
 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -68,7 +69,7 @@ class Witness:
         self.len = 0
         self.id = ''
         self.get_my_id()
-        self.parse_me()
+        # self.parse_me()
 
     def get_my_id(self):
         """ Returns the witness id. """
@@ -214,7 +215,6 @@ def parse_file(file):
 
 
 
-
 def check_files(witnesses):
     """ Checks that all files have the same number of <p> """
 
@@ -239,6 +239,7 @@ def check_files(witnesses):
 
     print('OK!')
     return
+
 
 
 def textual_diff_witnesses(fromwit, towit):
@@ -316,8 +317,13 @@ def textual_collate(witnesses):
         [TCollation(i, witnesses[0], witnesses[i + 1])
          for i in range(file_num - 1)]
 
+
+    processes = []
     for coll in collations:
-        coll.run()
+        processes.append(multiprocessing.Process(target=coll.run(), args=''))
+
+    for th in processes:
+        th.start()
 
     out_file = open('output.txt', 'w')
 
@@ -425,8 +431,12 @@ def html_collate(witnesses):
         [HCollation(i, witnesses[0], witnesses[i + 1])
          for i in range(file_num - 1)]
 
+    processes = []
     for coll in collations:
-        coll.run()
+        processes.append(multiprocessing.Process(target=coll.run(), args=''))
+
+    for th in processes:
+        th.start()
 
     out_file = open('output.html', 'w')
 
@@ -467,7 +477,7 @@ def html_collate(witnesses):
             if collations.index(coll) == 0:
                 out_file.write(f'<h1>{xid} (¶{i+1})</h1>\n')
             # out_file.write(f'<h2>{coll.from_wit_id}</h2>\n')
-            # out_file.write(witnesses[0].get_par_by_index(i) + '\n')
+            # out_file.write(witness[0].get_par_by_index(i) + '\n')
             out_file.write(f'<h2>{to_wit_id}</h2>')
             # out_file.write(coll.to_wit.get_par_by_index(i) + '\n')
             out_file.write(f'{data}')
@@ -504,8 +514,15 @@ def main():
     witnesses = []
     for file_name in files:
         witnesses.append(Witness(file_name))
+
+    processes = []
+    for wit in witnesses:
+        processes.append(multiprocessing.Process(target=wit.parse_me(), args=''))
         if pyprind_exists:
             bar.update()
+
+    for th in processes:
+        th.start()
 
     witnesses = sort_witnesses(witnesses)
     print("OK!")
@@ -526,6 +543,7 @@ def main():
 
     e_time = time.time()
     print(f'Total time: {e_time-s_time}')
+
 
     print('Finished!')
 

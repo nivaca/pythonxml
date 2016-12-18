@@ -10,6 +10,7 @@ import os
 import sys
 from bs4 import BeautifulSoup
 import threading
+import time
 
 try:
     import diff_match_patch as gdmp
@@ -505,6 +506,8 @@ def main():
     else:
         print(message)
 
+    s_time = time.time()
+
     # Creates a lists of Witness objects.
     # E.g. wit[0] is a Witness object whose name is contained in file[0].
     # These witnesses are parsed upon creation.
@@ -537,6 +540,10 @@ def main():
         textual_collate(witnesses)
         print('\n\nStarting html collation')
         html_collate(witnesses)
+
+    e_time = time.time()
+    print(f'Total time: {e_time-s_time}')
+
 
     print('Finished!')
 
