@@ -1,5 +1,5 @@
 """ collator.py
-A Simple Python Collator v.0.2
+A Simple Python Collator v.0.3
 © 2016 Nicolas Vaughan
 n.vaughan@uniandes.edu.co
 Universidad de los Andes, Colombia
