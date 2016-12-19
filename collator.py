@@ -7,9 +7,16 @@ Runs on Python 3.6+
 Requires: BeautifulSoup 4, diff_match_patch """
 
 import os
-import sys
-from bs4 import BeautifulSoup
 import time
+
+
+try:
+    from bs4 import BeautifulSoup
+except ImportError:
+    print('BeautifulSoup 4 module not available')
+    print('Aborting...')
+    exit(0)
+
 
 try:
     import diff_match_patch as gdmp
@@ -18,13 +25,15 @@ except ImportError:
     print('Aborting...')
     exit(0)
 
+
 try:
-    import pyprind
+    from tqdm import tqdm
 except ImportError:
-    print('Warning: pyrind module not available')
-    pyprind_exists = False
+    print('Warning: tqdm module not available')
+    tqdm_exists = False
 else:
-    pyprind_exists = True
+    tqdm_exists = True
+
 
 try:
     from xmlcleaners import meta_cleanup, clean_str
@@ -218,13 +227,10 @@ def parse_file(file):
 def check_files(witnesses):
     """ Checks that all files have the same number of <p> """
 
-    message = f'\nChecking {file_num} files...'
+    message = f'Checking {file_num} files...'
 
-    if pyprind_exists:
-        bar = pyprind.ProgBar((file_num - 1),
-                              title=message,
-                              stream=sys.stdout,
-                              track_time=False)
+    if tqdm_exists:
+        bar = tqdm(total=(file_num-1), desc=message, mininterval=0.1, unit_scale=True)
     else:
         print(message)
 
@@ -234,8 +240,8 @@ def check_files(witnesses):
             print('Aborting...')
             exit(0)
 
-        if pyprind_exists:
-            bar.update()
+        if tqdm_exists:
+            bar.update(1)
 
     print('OK!')
     return
@@ -253,11 +259,9 @@ def textual_diff_witnesses(fromwit, towit):
     # and a tuple containing deletions and additions
     totals = []
 
-    message = f"\nComparing {fromwit.id} and {towit.id}"
-
-    if pyprind_exists:
-        bar = pyprind.ProgBar(len(fromwit), title=message,
-                              stream=sys.stdout, track_time=False)
+    message = f"Comparing {fromwit.id} and {towit.id}"
+    if tqdm_exists:
+        bar = tqdm(total=len(fromwit), desc=message, mininterval=0.1, unit_scale=True)
     else:
         print(message)
 
@@ -296,8 +300,8 @@ def textual_diff_witnesses(fromwit, towit):
 
         totals.append((additions, deletions))
 
-        if pyprind_exists:
-            bar.update()
+        if tqdm_exists:
+            bar.update(1)
 
     print('OK!')
 
@@ -325,9 +329,8 @@ def textual_collate(witnesses):
 
     message = '\nWriting output.txt'
 
-    if pyprind_exists:
-        bar = pyprind.ProgBar(len(witnesses[0]), title=message,
-                              stream=sys.stdout, track_time=False)
+    if tqdm_exists:
+        bar = tqdm(len(witnesses[0]), desc=message, mininterval=0.1, unit_scale=True)
     else:
         print(message)
 
@@ -360,8 +363,8 @@ def textual_collate(witnesses):
             if len(additions) > 1:
                 out_file.write('+++ ' + additions + '\n')
 
-        if pyprind_exists:
-            bar.update()
+        if tqdm_exists:
+            bar.update(1)
 
     out_file.close()
     return
@@ -378,10 +381,9 @@ def html_diff_witnesses(fromwit, towit):
     # and a tuple containing deletions and additions
     totals = []
 
-    message = f"\nComparing {fromwit.id} and {towit.id}"
-    if pyprind_exists:
-        bar = pyprind.ProgBar(len(fromwit), title=message,
-                              stream=sys.stdout, track_time=False)
+    message = f"Comparing {fromwit.id} and {towit.id}"
+    if tqdm_exists:
+        bar = tqdm(total=len(fromwit), desc=message, mininterval=0.1, unit_scale=True)
     else:
         print(message)
 
@@ -404,8 +406,8 @@ def html_diff_witnesses(fromwit, towit):
 
         totals.append(html_snippet)
 
-        if pyprind_exists:
-            bar.update()
+        if tqdm_exists:
+            bar.update(1)
 
     print('OK!')
 
@@ -440,10 +442,8 @@ def html_collate(witnesses):
     xml_ids = witnesses[0].xml_ids
 
     message = '\nWriting output.html'
-
-    if pyprind_exists:
-        bar = pyprind.ProgBar(len(witnesses[0]), title=message,
-                              stream=sys.stdout, track_time=False)
+    if tqdm_exists:
+        bar = tqdm(total=len(witnesses[0]), desc=message, mininterval=0.1, unit_scale=True)
     else:
         print(message)
 
@@ -472,8 +472,8 @@ def html_collate(witnesses):
             # out_file.write(coll.to_wit.get_par_by_index(i) + '\n')
             out_file.write(f'{data}')
 
-        if pyprind_exists:
-            bar.update()
+        if tqdm_exists:
+            bar.update(1)
 
     out_file.write("</body>\n</html>")
     out_file.close()
@@ -489,12 +489,11 @@ def main():
     file_num = len(files)
 
     message = f'Parsing {file_num} files...'
-
-    if pyprind_exists:
-        bar = pyprind.ProgBar(file_num, title=message,
-                              stream=sys.stdout, track_time=False)
+    if tqdm_exists:
+        bar = tqdm(total=file_num, desc=message, mininterval=0.1, unit_scale=True)
     else:
         print(message)
+
 
     s_time = time.time()
 
@@ -504,8 +503,8 @@ def main():
     witnesses = []
     for file_name in files:
         witnesses.append(Witness(file_name))
-        if pyprind_exists:
-            bar.update()
+    if tqdm_exists:
+        bar.update(1)
 
     witnesses = sort_witnesses(witnesses)
     print("OK!")
