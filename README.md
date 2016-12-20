@@ -8,7 +8,7 @@ Python3 scripts to diff TEI-XML files
 * BeautifulSoup 4
 * lxml
 * google-diff-match-patch Python 3 module (https://bitbucket.org/cowwoc/google-diff-match-patch/src)
-* tqdm module (https://github.com/tqdm/tqdm) [Optional. This module is used to display nice progress bars. If not found, the scripts will display a warning but continue running without problems.]
+
 
 ## Detailed Description
 This script parses all the TEI-XML files in the `/data` directory, and compares them using the `diff-match-patch` algorithm by Google. The script can then return an output text file (`output.txt`) and/or html-prettified file (`output.html`) containing the diff of the files.
@@ -37,12 +37,6 @@ The `diff-match-patch` module can be installed in the following way:
 pip install diff-match-patch
 ```
 
-
-The `tqdm` module can be installed in the following way:
-
-```bash
-pip install tqdm
-```
 
 ### Why Python 3.6+?
 Python 3.6 introduced—amongst several nice changes—a powerful way of managing formatted string literals. (See [PEP 498](https://www.python.org/dev/peps/pep-0498/)). Our scripts make use of that new feature.

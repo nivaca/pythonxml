@@ -26,14 +26,6 @@ except ImportError:
     exit(0)
 
 try:
-    from tqdm import tqdm
-except ImportError:
-    print('Warning: tqdm module not available')
-    tqdm_exists = False
-else:
-    tqdm_exists = True
-
-try:
     from xmlcleaners import meta_cleanup, clean_str
 except ImportError:
     print('xmlcleaners module not available')
@@ -225,21 +217,14 @@ def parse_file(file):
 def check_files(witnesses):
     """ Checks that all files have the same number of <p> """
 
-    message = f'Checking {file_num} files...'
-
-    if tqdm_exists:
-        bar = tqdm(total=(file_num-1), desc=message, mininterval=0.1, unit_scale=True)
-    else:
-        print(message)
+    message = f'\nChecking {file_num} files...'
+    print(message)
 
     for i in range(1, file_num):
         if len(witnesses[0]) != len(witnesses[i]):
             print('\nError! Files do not have the same number of <p xml:id="..."> tags!')
             print('Aborting...')
             exit(0)
-
-        if tqdm_exists:
-            bar.update(1)
 
     print('OK!')
     return
@@ -288,7 +273,7 @@ def textual_diff_witnesses(fromwit, towit):
     # Creates a global list of all XML:IDs (using the first file only)
     xml_ids = fromwit.xml_ids
 
-    message = f"Comparing {fromwit.id} and {towit.id}..."
+    message = f"\nComparing {fromwit.id} and {towit.id}..."
     print(message)
 
     # Multiprocessing
@@ -324,11 +309,7 @@ def textual_collate(witnesses):
     xml_ids = witnesses[0].xml_ids
 
     message = '\nWriting output.txt'
-
-    if tqdm_exists:
-        bar = tqdm(len(witnesses[0]), desc=message, mininterval=0.1, unit_scale=True)
-    else:
-        print(message)
+    print(message)
 
     # This first loop will be repeated the number of
     # XML-IDs.
@@ -358,9 +339,6 @@ def textual_collate(witnesses):
                 out_file.write('˜˜˜ ' + deletions + '\n')
             if len(additions) > 1:
                 out_file.write('+++ ' + additions + '\n')
-
-        if tqdm_exists:
-            bar.update(1)
 
     out_file.close()
     return
@@ -395,7 +373,7 @@ def html_diff_witnesses(fromwit, towit):
     # Creates a global list of all XML:IDs (using the first file only)
     xml_ids = fromwit.xml_ids
 
-    message = f"Comparing {fromwit.id} and {towit.id}"
+    message = f"\nComparing {fromwit.id} and {towit.id}"
     print(message)
 
     # Multiprocessing
@@ -439,10 +417,7 @@ def html_collate(witnesses):
     xml_ids = witnesses[0].xml_ids
 
     message = '\nWriting output.html'
-    if tqdm_exists:
-        bar = tqdm(total=len(witnesses[0]), desc=message, mininterval=0.1, unit_scale=True)
-    else:
-        print(message)
+    print(message)
 
     # This first loop will be repeated the number of
     # XML-IDs.
@@ -469,9 +444,6 @@ def html_collate(witnesses):
             # out_file.write(coll.to_wit.get_par_by_index(i) + '\n')
             out_file.write(f'{data}')
 
-        if tqdm_exists:
-            bar.update(1)
-
     out_file.write("</body>\n</html>")
     out_file.close()
     return
@@ -486,10 +458,7 @@ def main():
     file_num = len(files)
 
     message = f'Parsing {file_num} files...'
-    if tqdm_exists:
-        bar = tqdm(total=file_num, desc=message, mininterval=0.1, unit_scale=True)
-    else:
-        print(message)
+    print(message)
 
 
     s_time = time.time()
@@ -500,8 +469,6 @@ def main():
     witnesses = []
     for file_name in files:
         witnesses.append(Witness(file_name))
-    if tqdm_exists:
-        bar.update(1)
 
     witnesses = sort_witnesses(witnesses)
     print("OK!")
