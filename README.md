@@ -76,7 +76,7 @@ $ python3 collator.py
 from within the downloaded directory structure.
 
 ## TODO
-- Multiprocessing
+- ~~Multiprocessing~~ (v. 0.4)
 - LaTeX output
 - ORG Mode output
 
@@ -88,3 +88,10 @@ Universidad de los Andes, Bogotá, Colombia.
 ## License
 Creative Commons Attribution-NonCommercial 3.0 Unported (CC BY-NC 3.0)
 http://creativecommons.org/licenses/by-nc/3.0/
+
+
+## Changes
+- v.0.4 Added multiprocessing
+- v.0.3 Generalised input for all xml files in data directory
+- v.0.2 Minor enhancements
+- v.0.1 Initial release

@@ -1,5 +1,5 @@
 """ collator.py
-A Simple Python Collator v.0.3
+A Simple Python Collator v.0.4
 © 2016 Nicolas Vaughan
 n.vaughan@uniandes.edu.co
 Universidad de los Andes, Colombia
@@ -8,7 +8,8 @@ Requires: BeautifulSoup 4, diff_match_patch """
 
 import os
 import time
-
+import functools
+from multiprocessing import Pool
 
 try:
     from bs4 import BeautifulSoup
@@ -17,14 +18,12 @@ except ImportError:
     print('Aborting...')
     exit(0)
 
-
 try:
     import diff_match_patch as gdmp
 except ImportError:
     print('diff_match_patch module not available')
     print('Aborting...')
     exit(0)
-
 
 try:
     from tqdm import tqdm
@@ -33,7 +32,6 @@ except ImportError:
     tqdm_exists = False
 else:
     tqdm_exists = True
-
 
 try:
     from xmlcleaners import meta_cleanup, clean_str
@@ -247,6 +245,41 @@ def check_files(witnesses):
     return
 
 
+def textual_diff_subroutine(fromwit, towit, xid):
+    """ Textual diff subroutine needed for multiprocessing. """
+    from_data = \
+        fromwit.get_par_by_xmlid(xid).lower()
+    to_data = \
+        towit.get_par_by_xmlid(xid).lower()
+
+    # create a diff_match_patch object
+    dmp = gdmp.diff_match_patch()
+
+    dmp.Diff_Timeout = 0
+
+    delta = dmp.diff_main(from_data, to_data)
+    dmp.diff_cleanupSemantic(delta)
+
+    additions = '|'
+    deletions = '|'
+
+    for d in delta:
+        change = d[1].strip()
+
+        # Skip one for loop if no changes found.
+        if d[0] == 0 or len(change) == 0:
+            continue
+
+        # Checks if any changes were found and
+        # thus need to be written. The value
+        # of 1 takes into account the initial '|'.
+        if d[0] == 1:
+            additions = additions + change + '|'
+        if d[0] == -1:
+            deletions = deletions + change + '|'
+    return additions, deletions
+
+
 def textual_diff_witnesses(fromwit, towit):
     """ Compares two witnesses.
     Returns a list like so:
@@ -255,53 +288,16 @@ def textual_diff_witnesses(fromwit, towit):
     # Creates a global list of all XML:IDs (using the first file only)
     xml_ids = fromwit.xml_ids
 
-    # totals is a list containing the xml_id of the p
-    # and a tuple containing deletions and additions
-    totals = []
+    message = f"Comparing {fromwit.id} and {towit.id}..."
+    print(message)
 
-    message = f"Comparing {fromwit.id} and {towit.id}"
-    if tqdm_exists:
-        bar = tqdm(total=len(fromwit), desc=message, mininterval=0.1, unit_scale=True)
-    else:
-        print(message)
-
-    for xid in xml_ids:
-        from_data = \
-            fromwit.get_par_by_xmlid(xid).lower()
-        to_data = \
-            towit.get_par_by_xmlid(xid).lower()
-
-
-        # create a diff_match_patch object
-        dmp = gdmp.diff_match_patch()
-
-        dmp.Diff_Timeout = 0
-
-        delta = dmp.diff_main(from_data, to_data)
-        dmp.diff_cleanupSemantic(delta)
-
-        additions = '|'
-        deletions = '|'
-
-        for d in delta:
-            change = d[1].strip()
-
-            # Skip one for loop if no changes found.
-            if d[0] == 0 or len(change) == 0:
-                continue
-
-            # Checks if any changes were found and
-            # thus need to be written. The value
-            # of 1 takes into account the initial '|'.
-            if d[0] == 1:
-                additions = additions + change + '|'
-            if d[0] == -1:
-                deletions = deletions + change + '|'
-
-        totals.append((additions, deletions))
-
-        if tqdm_exists:
-            bar.update(1)
+    # Multiprocessing
+    pool = Pool()
+    partial_fun = \
+        functools.partial(textual_diff_subroutine, fromwit, towit)
+    totals = pool.map(partial_fun, xml_ids)
+    pool.close()
+    pool.join()
 
     print('OK!')
 
@@ -370,6 +366,28 @@ def textual_collate(witnesses):
     return
 
 
+
+def html_diff_subroutine(fromwit, towit, xid):
+    """" HTML diff subroutine needed for multiprocessing. """
+    from_data = \
+        fromwit.get_par_by_xmlid(xid).lower()
+    to_data = \
+        towit.get_par_by_xmlid(xid).lower()
+
+    # create a diff_match_patch object
+    dmp = gdmp.diff_match_patch()
+
+    dmp.Diff_Timeout = 0
+
+    diffs = dmp.diff_main(from_data, to_data)
+    dmp.diff_cleanupSemantic(diffs)
+
+    html_snippet = dmp.diff_prettyHtml(diffs)
+
+    return html_snippet
+
+
+
 def html_diff_witnesses(fromwit, towit):
     """ Compares two witnesses.
     Returns a list like so: """
@@ -377,37 +395,16 @@ def html_diff_witnesses(fromwit, towit):
     # Creates a global list of all XML:IDs (using the first file only)
     xml_ids = fromwit.xml_ids
 
-    # totals is a list containing the xml_id of the p
-    # and a tuple containing deletions and additions
-    totals = []
-
     message = f"Comparing {fromwit.id} and {towit.id}"
-    if tqdm_exists:
-        bar = tqdm(total=len(fromwit), desc=message, mininterval=0.1, unit_scale=True)
-    else:
-        print(message)
+    print(message)
 
-    for xid in xml_ids:
-        from_data = \
-            fromwit.get_par_by_xmlid(xid).lower()
-        to_data = \
-            towit.get_par_by_xmlid(xid).lower()
-
-
-        # create a diff_match_patch object
-        dmp = gdmp.diff_match_patch()
-
-        dmp.Diff_Timeout = 0
-
-        diffs = dmp.diff_main(from_data, to_data)
-        dmp.diff_cleanupSemantic(diffs)
-
-        html_snippet = dmp.diff_prettyHtml(diffs)
-
-        totals.append(html_snippet)
-
-        if tqdm_exists:
-            bar.update(1)
+    # Multiprocessing
+    pool = Pool()
+    partial_fun = \
+        functools.partial(html_diff_subroutine, fromwit, towit)
+    totals = pool.map(partial_fun, xml_ids)
+    pool.close()
+    pool.join()
 
     print('OK!')
 
