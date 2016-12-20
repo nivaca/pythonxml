@@ -7,7 +7,6 @@ Runs on Python 3.6+
 Requires: BeautifulSoup 4, diff_match_patch """
 
 import os
-import time
 import functools
 from multiprocessing import Pool
 
@@ -217,8 +216,8 @@ def parse_file(file):
 def check_files(witnesses):
     """ Checks that all files have the same number of <p> """
 
-    message = f'\nChecking {file_num} files...'
-    print(message)
+    message = f'\nChecking {file_num} files... '
+    print(message, end='')
 
     for i in range(1, file_num):
         if len(witnesses[0]) != len(witnesses[i]):
@@ -273,8 +272,8 @@ def textual_diff_witnesses(fromwit, towit):
     # Creates a global list of all XML:IDs (using the first file only)
     xml_ids = fromwit.xml_ids
 
-    message = f"\nComparing {fromwit.id} and {towit.id}..."
-    print(message)
+    message = f"Comparing {fromwit.id} and {towit.id}... "
+    print(message, end='')
 
     # Multiprocessing
     pool = Pool()
@@ -308,8 +307,8 @@ def textual_collate(witnesses):
 
     xml_ids = witnesses[0].xml_ids
 
-    message = '\nWriting output.txt'
-    print(message)
+    message = '\nWriting output.txt... '
+    print(message, end='')
 
     # This first loop will be repeated the number of
     # XML-IDs.
@@ -341,6 +340,7 @@ def textual_collate(witnesses):
                 out_file.write('+++ ' + additions + '\n')
 
     out_file.close()
+    print('OK!')
     return
 
 
@@ -373,8 +373,8 @@ def html_diff_witnesses(fromwit, towit):
     # Creates a global list of all XML:IDs (using the first file only)
     xml_ids = fromwit.xml_ids
 
-    message = f"\nComparing {fromwit.id} and {towit.id}"
-    print(message)
+    message = f"Comparing {fromwit.id} and {towit.id}... "
+    print(message, end='')
 
     # Multiprocessing
     pool = Pool()
@@ -416,8 +416,8 @@ def html_collate(witnesses):
 
     xml_ids = witnesses[0].xml_ids
 
-    message = '\nWriting output.html'
-    print(message)
+    message = '\nWriting output.html...'
+    print(message, end='')
 
     # This first loop will be repeated the number of
     # XML-IDs.
@@ -446,6 +446,7 @@ def html_collate(witnesses):
 
     out_file.write("</body>\n</html>")
     out_file.close()
+    print('OK!')
     return
 
 
@@ -457,11 +458,9 @@ def main():
     global file_num
     file_num = len(files)
 
-    message = f'Parsing {file_num} files...'
-    print(message)
+    message = f'Parsing {file_num} files... '
+    print(message, end='')
 
-
-    s_time = time.time()
 
     # Creates a lists of Witness objects.
     # E.g. wit[0] is a Witness object whose name is contained in file[0].
@@ -471,26 +470,25 @@ def main():
         witnesses.append(Witness(file_name))
 
     witnesses = sort_witnesses(witnesses)
+
     print("OK!")
 
     check_files(witnesses)
 
     if collation_type == 'textual':
-        print('\n\nStarting textual collation')
+        print('\nStarting textual collation')
         textual_collate(witnesses)
     elif collation_type == 'html':
-        print('\n\nStarting html collation')
+        print('\nStarting HTML collation')
         html_collate(witnesses)
     else:
-        print('\n\nStarting textual collation')
+        print('\nStarting textual collation')
         textual_collate(witnesses)
-        print('\n\nStarting html collation')
+        print('\nStarting html collation')
         html_collate(witnesses)
 
-    e_time = time.time()
-    print(f'Total time: {e_time-s_time}')
-
     print('Finished!')
+
 
 if __name__ == "__main__":
     main()
