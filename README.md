@@ -37,29 +37,6 @@ The `diff-match-patch` module can be installed in the following way:
 pip install diff-match-patch
 ```
 
-
-### Why Python 3.6+?
-Python 3.6 introduced—amongst several nice changes—a powerful way of managing formatted string literals. (See [PEP 498](https://www.python.org/dev/peps/pep-0498/)). Our scripts make use of that new feature.
-
-If the user wishes to use a previous version of Python 3 (not Python 2!), he/she may simply change the formatted string literals. For example:
-
-```python
-message = f'\nChecking {file_num} files...'
-```
-
-should be changed to:
-
-```python
-message = '\nChecking %d files...' %file_num
-```
-
-or to:
-
-```python
-message = '\nChecking {} files...'.format(file_num)
-```
-
-
 ## Tests
 To test the scripts, simply run
 
