@@ -1,4 +1,4 @@
-beautifulsoup4==4.5.1
+beautifulsoup4==4.6.3
 diff-match-patch==20121119
-lxml==3.7.0
-PyPrind==2.9.9
+lxml==4.2.5
+PyPrind==2.11.2
