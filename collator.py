@@ -1,9 +1,11 @@
+#!/usr/bin/env python3
+
 """ collator.py
 A Simple Python Collator v.0.4
-© 2016 Nicolas Vaughan
+© 2018 Nicolas Vaughan
 n.vaughan@uniandes.edu.co
 Universidad de los Andes, Colombia
-Runs on Python 3.6+
+Runs on Python 3.7+
 Requires: BeautifulSoup 4, diff_match_patch """
 
 import os
@@ -55,6 +57,7 @@ collation_type = 'both'
 
 class Witness:
     """ This is the class of witnesses. """
+
     def __init__(self, name):
         self.name = name
         self.short_file_name = self.name + default_ext
@@ -98,6 +101,7 @@ class Witness:
 
 class Collation:
     """ This is the class of collations. """
+
     def __init__(self, c_id, from_wit, to_wit):
         self.c_id = c_id
         # from-Witness
@@ -111,6 +115,7 @@ class Collation:
 
 class TCollation(Collation):
     """ This is the class of textual collations. """
+
     def run(self):
         """ Calls diff_witnesses() over the two wits. """
         self.data = textual_diff_witnesses(self.from_wit, self.to_wit)
@@ -118,6 +123,7 @@ class TCollation(Collation):
 
 class HCollation(Collation):
     """ This is the class of HTML collations. """
+
     def run(self):
         """ Calls diff_witnesses() over the two wits. """
         self.data = html_diff_witnesses(self.from_wit, self.to_wit)
