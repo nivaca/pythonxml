@@ -186,14 +186,12 @@ def parse_file(file):
     Returns a list of couples, like so:
     [('b1d3qun-cdtvet', 'Circa ...'), etc.] """
     soup = BeautifulSoup(open(file), "lxml-xml")
+
+    # clean the file using all filters
     soup = meta_cleanup(soup)
 
-    # Checks whether tag has 'xml:id'
-    def has_attr(tag):
-        return tag.has_attr('xml:id')
-
-    # Creates a soup of all <p> tags
-    p_soup = soup.find_all(has_attr)
+    # Creates a soup of all <p> tags under <body>
+    p_soup = soup.select("body p")
 
     # Creates a list of all and only all <p>
     # whose xml:id contain "b1d3qun"
@@ -205,9 +203,13 @@ def parse_file(file):
     for parag in paragraphs:
         buf = ''
         for pa in parag:
+            pa = str(pa)
+            # print(type(pa))
             buf += pa
         buf = clean_str(buf)
         p_tags.append(buf)
+
+    # exit(0)
 
     # Provides a list of all @xml:ids containing "b1d3qun":
     xml_ids = [p["xml:id"] for p in paragraphs]
@@ -215,8 +217,6 @@ def parse_file(file):
     # Returns a list of tuples of the parsed XML, like so:
     # [('b1d3qun-cdtvet', 'Circa ...'), etc.]
     return list(zip(xml_ids, p_tags))
-
-
 
 
 def check_files(witnesses):
