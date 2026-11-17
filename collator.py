@@ -3,7 +3,7 @@
 """ collator.py
 A Simple Python Collator v.0.4
 © 2018 Nicolas Vaughan
-n.vaughan@uniandes.edu.co
+nicolasvaughan@proton.me
 Universidad de los Andes, Colombia
 Runs on Python 3.7+
 Requires: BeautifulSoup 4, diff_match_patch """
